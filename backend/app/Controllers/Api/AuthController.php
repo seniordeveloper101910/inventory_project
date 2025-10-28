@@ -1,1 +1,33 @@
-<?php\nnamespace App\Controllers\Api;\n\nuse App\Models\UserModel;\nuse CodeIgniter\RESTful\ResourceController;\nuse Firebase\\JWT\\JWT;\n\nclass AuthController extends ResourceController {\n    protected $format = 'json';\n\n    public function login() {\n        $data = $this->request->getJSON(true);\n        if (empty($data['username']) || empty($data['password'])) {\n            return $this->failValidationError('username and password required');\n        }\n        $userModel = new UserModel();\n        $user = $userModel->where('username', $data['username'])->first();\n        if (!$user) return $this->failNotFound('User not found');\n        if (!password_verify($data['password'], $user['password'])) {\n            return $this->fail('Invalid credentials', 401);\n        }\n        $key = getenv('JWT_SECRET') ?: 'change_this_secret';\n        $payload = [\n            'iss' => base_url(),\n            'iat' => time(),\n            'exp' => time() + 3600*24,\n            'uid' => $user['id'],\n            'role' => $user['role']\n        ];\n        $jwt = JWT::encode($payload, $key, 'HS256');\n        return $this->respond(['token' => $jwt]);\n    }\n}\n
+<?php
+namespace App\Controllers\Api;
+
+use App\Models\UserModel;
+use CodeIgniter\RESTful\ResourceController;
+use Firebase\\JWT\\JWT;
+
+class AuthController extends ResourceController {
+    protected $format = 'json';
+
+    public function login() {
+        $data = $this->request->getJSON(true);
+        if (empty($data['username']) || empty($data['password'])) {
+            return $this->failValidationError('username and password required');
+        }
+        $userModel = new UserModel();
+        $user = $userModel->where('username', $data['username'])->first();
+        if (!$user) return $this->failNotFound('User not found');
+        if (!password_verify($data['password'], $user['password'])) {
+            return $this->fail('Invalid credentials', 401);
+        }
+        $key = getenv('JWT_SECRET') ?: 'change_this_secret';
+        $payload = [
+            'iss' => base_url(),
+            'iat' => time(),
+            'exp' => time() + 3600*24,
+            'uid' => $user['id'],
+            'role' => $user['role']
+        ];
+        $jwt = JWT::encode($payload, $key, 'HS256');
+        return $this->respond(['token' => $jwt]);
+    }
+}

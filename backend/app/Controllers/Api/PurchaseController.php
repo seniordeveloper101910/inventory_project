@@ -1,1 +1,56 @@
-<?php\nnamespace App\Controllers\Api;\n\nuse App\Models\PurchaseModel;\nuse App\Models\PurchaseItemModel;\nuse App\Models\ProductModel;\nuse CodeIgniter\RESTful\ResourceController;\n\nclass PurchaseController extends ResourceController {\n    protected $modelName = 'App\\Models\\PurchaseModel';\n    protected $format = 'json';\n\n    public function create() {\n        $db = \\Config\\Database::connect();\n        $data = $this->request->getJSON(true);\n        if (empty($data['supplier_id']) || empty($data['items'])) {\n            return $this->failValidationError('supplier_id and items are required');\n        }\n        $items = $data['items'];\n        $total = 0;\n        $db->transStart();\n        try {\n            $purchaseModel = new PurchaseModel();\n            $purchaseId = $purchaseModel->insert([\n                'supplier_id' => $data['supplier_id'],\n                'reference' => $data['reference'] ?? null,\n                'total' => 0,\n                'status' => 'received'\n            ]);\n            $pmItem = new PurchaseItemModel();\n            $productModel = new ProductModel();\n            foreach ($items as $it) {\n                $qty = (int)$it['qty'];\n                $cost = (float)$it['cost'];\n                $total += $qty * $cost;\n                $pmItem->insert([\n                    'purchase_id' => $purchaseId,\n                    'product_id' => $it['product_id'],\n                    'qty' => $qty,\n                    'cost' => $cost\n                ]);\n                $product = $productModel->find($it['product_id']);\n                if ($product) {\n                    $newQty = $product['stock_qty'] + $qty;\n                    $productModel->update($product['id'], ['stock_qty' => $newQty]);\n                }\n            }\n            $purchaseModel->update($purchaseId, ['total'=>$total]);\n            $db->transComplete();\n        } catch (\\Exception $e) {\n            $db->transRollback();\n            return $this->failServerError('Failed to create purchase: ' . $e->getMessage());\n        }\n        return $this->respondCreated(['id'=>$purchaseId,'total'=>$total]);\n    }\n}\n
+<?php
+namespace App\Controllers\Api;
+
+use App\Models\PurchaseModel;
+use App\Models\PurchaseItemModel;
+use App\Models\ProductModel;
+use CodeIgniter\RESTful\ResourceController;
+
+class PurchaseController extends ResourceController {
+    protected $modelName = 'App\\Models\\PurchaseModel';
+    protected $format = 'json';
+
+    public function create() {
+        $db = \\Config\\Database::connect();
+        $data = $this->request->getJSON(true);
+        if (empty($data['supplier_id']) || empty($data['items'])) {
+            return $this->failValidationError('supplier_id and items are required');
+        }
+        $items = $data['items'];
+        $total = 0;
+        $db->transStart();
+        try {
+            $purchaseModel = new PurchaseModel();
+            $purchaseId = $purchaseModel->insert([
+                'supplier_id' => $data['supplier_id'],
+                'reference' => $data['reference'] ?? null,
+                'total' => 0,
+                'status' => 'received'
+            ]);
+            $pmItem = new PurchaseItemModel();
+            $productModel = new ProductModel();
+            foreach ($items as $it) {
+                $qty = (int)$it['qty'];
+                $cost = (float)$it['cost'];
+                $total += $qty * $cost;
+                $pmItem->insert([
+                    'purchase_id' => $purchaseId,
+                    'product_id' => $it['product_id'],
+                    'qty' => $qty,
+                    'cost' => $cost
+                ]);
+                $product = $productModel->find($it['product_id']);
+                if ($product) {
+                    $newQty = $product['stock_qty'] + $qty;
+                    $productModel->update($product['id'], ['stock_qty' => $newQty]);
+                }
+            }
+            $purchaseModel->update($purchaseId, ['total'=>$total]);
+            $db->transComplete();
+        } catch (\\Exception $e) {
+            $db->transRollback();
+            return $this->failServerError('Failed to create purchase: ' . $e->getMessage());
+        }
+        return $this->respondCreated(['id'=>$purchaseId,'total'=>$total]);
+    }
+}

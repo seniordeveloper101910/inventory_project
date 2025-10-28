@@ -1,1 +1,9 @@
-<?php\nnamespace App\Models;\nuse CodeIgniter\Model;\n\nclass UserModel extends Model {\n    protected $table = 'users';\n    protected $allowedFields = ['username','password','role'];\n    protected $useTimestamps = true;\n}\n
+<?php
+namespace App\Models;
+use CodeIgniter\Model;
+
+class UserModel extends Model {
+    protected $table = 'users';
+    protected $allowedFields = ['username','password','role'];
+    protected $useTimestamps = true;
+}

@@ -1,1 +1,9 @@
-<?php\nnamespace App\Models;\nuse CodeIgniter\Model;\n\nclass SaleItemModel extends Model {\n    protected $table = 'sale_items';\n    protected $allowedFields = ['sale_id','product_id','qty','price'];\n    protected $useTimestamps = true;\n}\n
+<?php
+namespace App\Models;
+use CodeIgniter\Model;
+
+class SaleItemModel extends Model {
+    protected $table = 'sale_items';
+    protected $allowedFields = ['sale_id','product_id','qty','price'];
+    protected $useTimestamps = true;
+}

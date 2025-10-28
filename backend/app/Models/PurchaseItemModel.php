@@ -1,1 +1,9 @@
-<?php\nnamespace App\Models;\nuse CodeIgniter\Model;\n\nclass PurchaseItemModel extends Model {\n    protected $table = 'purchase_items';\n    protected $allowedFields = ['purchase_id','product_id','qty','cost'];\n    protected $useTimestamps = true;\n}\n
+<?php
+namespace App\Models;
+use CodeIgniter\Model;
+
+class PurchaseItemModel extends Model {
+    protected $table = 'purchase_items';
+    protected $allowedFields = ['purchase_id','product_id','qty','cost'];
+    protected $useTimestamps = true;
+}

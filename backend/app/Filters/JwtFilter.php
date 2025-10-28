@@ -1,1 +1,38 @@
-<?php\nnamespace App\Filters;\n\nuse CodeIgniter\HTTP\RequestInterface;\nuse CodeIgniter\HTTP\ResponseInterface;\nuse CodeIgniter\Filters\FilterInterface;\nuse Firebase\JWT\JWT;\nuse Firebase\JWT\Key;\nuse Config\Services;\n\nclass JwtFilter implements FilterInterface\n{\n    public function before(RequestInterface $request, $arguments = null)\n    {\n        $header = $request->getServer('HTTP_AUTHORIZATION');\n        if (!$header) {\n            return Services::response()->setStatusCode(401)->setJSON(['error'=>'Missing Authorization header']);\n        }\n        if (preg_match('/Bearer\\s+(.*)$/i', $header, $matches)) {\n            $token = $matches[1];\n        } else {\n            return Services::response()->setStatusCode(401)->setJSON(['error'=>'Malformed Authorization header']);\n        }\n\n        $key = getenv('JWT_SECRET') ?: 'change_this_secret';\n        try {\n            $decoded = JWT::decode($token, new Key($key, 'HS256'));\n            // attach user data if required\n        } catch (\\Exception $e) {\n            return Services::response()->setStatusCode(401)->setJSON(['error'=>'Invalid token: '.$e->getMessage()]);\n        }\n    }\n\n    public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)\n    {\n        // no-op\n    }\n}\n
+<?php
+namespace App\Filters;
+
+use CodeIgniter\HTTP\RequestInterface;
+use CodeIgniter\HTTP\ResponseInterface;
+use CodeIgniter\Filters\FilterInterface;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
+use Config\Services;
+
+class JwtFilter implements FilterInterface
+{
+    public function before(RequestInterface $request, $arguments = null)
+    {
+        $header = $request->getServer('HTTP_AUTHORIZATION');
+        if (!$header) {
+            return Services::response()->setStatusCode(401)->setJSON(['error'=>'Missing Authorization header']);
+        }
+        if (preg_match('/Bearer\\s+(.*)$/i', $header, $matches)) {
+            $token = $matches[1];
+        } else {
+            return Services::response()->setStatusCode(401)->setJSON(['error'=>'Malformed Authorization header']);
+        }
+
+        $key = getenv('JWT_SECRET') ?: 'change_this_secret';
+        try {
+            $decoded = JWT::decode($token, new Key($key, 'HS256'));
+            // attach user data if required
+        } catch (\\Exception $e) {
+            return Services::response()->setStatusCode(401)->setJSON(['error'=>'Invalid token: '.$e->getMessage()]);
+        }
+    }
+
+    public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)
+    {
+        // no-op
+    }
+}

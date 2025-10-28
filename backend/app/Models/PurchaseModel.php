@@ -1,1 +1,9 @@
-<?php\nnamespace App\Models;\nuse CodeIgniter\Model;\n\nclass PurchaseModel extends Model {\n    protected $table = 'purchases';\n    protected $allowedFields = ['supplier_id','reference','total','status'];\n    protected $useTimestamps = true;\n}\n
+<?php
+namespace App\Models;
+use CodeIgniter\Model;
+
+class PurchaseModel extends Model {
+    protected $table = 'purchases';
+    protected $allowedFields = ['supplier_id','reference','total','status'];
+    protected $useTimestamps = true;
+}

@@ -1,1 +1,32 @@
-<?php\nnamespace App\Controllers\Api;\n\nuse App\Models\SupplierModel;\nuse CodeIgniter\RESTful\ResourceController;\n\nclass SupplierController extends ResourceController {\n    protected $modelName = 'App\\Models\\SupplierModel';\n    protected $format = 'json';\n\n    public function index() {\n        return $this->respond($this->model->findAll());\n    }\n\n    public function create() {\n        $data = $this->request->getJSON(true);\n        if (empty($data['name'])) return $this->failValidationError('Name is required');\n        $this->model->insert($data);\n        return $this->respondCreated($data);\n    }\n\n    public function update($id = null) {\n        $data = $this->request->getJSON(true);\n        $this->model->update($id, $data);\n        return $this->respond($this->model->find($id));\n    }\n\n    public function delete($id = null) {\n        $this->model->delete($id);\n        return $this->respondDeleted(['id'=>$id]);\n    }\n}\n
+<?php
+namespace App\Controllers\Api;
+
+use App\Models\SupplierModel;
+use CodeIgniter\RESTful\ResourceController;
+
+class SupplierController extends ResourceController {
+    protected $modelName = 'App\\Models\\SupplierModel';
+    protected $format = 'json';
+
+    public function index() {
+        return $this->respond($this->model->findAll());
+    }
+
+    public function create() {
+        $data = $this->request->getJSON(true);
+        if (empty($data['name'])) return $this->failValidationError('Name is required');
+        $this->model->insert($data);
+        return $this->respondCreated($data);
+    }
+
+    public function update($id = null) {
+        $data = $this->request->getJSON(true);
+        $this->model->update($id, $data);
+        return $this->respond($this->model->find($id));
+    }
+
+    public function delete($id = null) {
+        $this->model->delete($id);
+        return $this->respondDeleted(['id'=>$id]);
+    }
+}

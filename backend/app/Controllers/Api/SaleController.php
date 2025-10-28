@@ -1,1 +1,56 @@
-<?php\nnamespace App\Controllers\Api;\n\nuse App\Models\SaleModel;\nuse App\Models\SaleItemModel;\nuse App\Models\ProductModel;\nuse CodeIgniter\RESTful\ResourceController;\n\nclass SaleController extends ResourceController {\n    protected $modelName = 'App\\Models\\SaleModel';\n    protected $format = 'json';\n\n    public function create() {\n        $db = \\Config\\Database::connect();\n        $data = $this->request->getJSON(true);\n        if (empty($data['items'])) {\n            return $this->failValidationError('items are required');\n        }\n        $items = $data['items'];\n        $total = 0;\n        $db->transStart();\n        try {\n            $saleModel = new SaleModel();\n            $saleId = $saleModel->insert([\n                'customer_name' => $data['customer_name'] ?? null,\n                'reference' => $data['reference'] ?? null,\n                'total' => 0,\n                'status' => 'completed'\n            ]);\n            $siModel = new SaleItemModel();\n            $productModel = new ProductModel();\n            foreach ($items as $it) {\n                $qty = (int)$it['qty'];\n                $price = (float)$it['price'];\n                $total += $qty * $price;\n                $siModel->insert([\n                    'sale_id' => $saleId,\n                    'product_id' => $it['product_id'],\n                    'qty' => $qty,\n                    'price' => $price\n                ]);\n                $product = $productModel->find($it['product_id']);\n                if ($product) {\n                    $newQty = max(0, $product['stock_qty'] - $qty);\n                    $productModel->update($product['id'], ['stock_qty' => $newQty]);\n                }\n            }\n            $saleModel->update($saleId, ['total'=>$total]);\n            $db->transComplete();\n        } catch (\\Exception $e) {\n            $db->transRollback();\n            return $this->failServerError('Failed to create sale: ' . $e->getMessage());\n        }\n        return $this->respondCreated(['id'=>$saleId,'total'=>$total]);\n    }\n}\n
+<?php
+namespace App\Controllers\Api;
+
+use App\Models\SaleModel;
+use App\Models\SaleItemModel;
+use App\Models\ProductModel;
+use CodeIgniter\RESTful\ResourceController;
+
+class SaleController extends ResourceController {
+    protected $modelName = 'App\\Models\\SaleModel';
+    protected $format = 'json';
+
+    public function create() {
+        $db = \\Config\\Database::connect();
+        $data = $this->request->getJSON(true);
+        if (empty($data['items'])) {
+            return $this->failValidationError('items are required');
+        }
+        $items = $data['items'];
+        $total = 0;
+        $db->transStart();
+        try {
+            $saleModel = new SaleModel();
+            $saleId = $saleModel->insert([
+                'customer_name' => $data['customer_name'] ?? null,
+                'reference' => $data['reference'] ?? null,
+                'total' => 0,
+                'status' => 'completed'
+            ]);
+            $siModel = new SaleItemModel();
+            $productModel = new ProductModel();
+            foreach ($items as $it) {
+                $qty = (int)$it['qty'];
+                $price = (float)$it['price'];
+                $total += $qty * $price;
+                $siModel->insert([
+                    'sale_id' => $saleId,
+                    'product_id' => $it['product_id'],
+                    'qty' => $qty,
+                    'price' => $price
+                ]);
+                $product = $productModel->find($it['product_id']);
+                if ($product) {
+                    $newQty = max(0, $product['stock_qty'] - $qty);
+                    $productModel->update($product['id'], ['stock_qty' => $newQty]);
+                }
+            }
+            $saleModel->update($saleId, ['total'=>$total]);
+            $db->transComplete();
+        } catch (\\Exception $e) {
+            $db->transRollback();
+            return $this->failServerError('Failed to create sale: ' . $e->getMessage());
+        }
+        return $this->respondCreated(['id'=>$saleId,'total'=>$total]);
+    }
+}
