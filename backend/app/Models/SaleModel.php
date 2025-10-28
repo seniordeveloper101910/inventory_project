@@ -1,0 +1,1 @@
+<?php\nnamespace App\Models;\nuse CodeIgniter\Model;\n\nclass SaleModel extends Model {\n    protected $table = 'sales';\n    protected $allowedFields = ['customer_name','reference','total','status'];\n    protected $useTimestamps = true;\n}\n

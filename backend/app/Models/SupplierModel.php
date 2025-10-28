@@ -1,0 +1,1 @@
+<?php\nnamespace App\Models;\nuse CodeIgniter\Model;\n\nclass SupplierModel extends Model {\n    protected $table = 'suppliers';\n    protected $allowedFields = ['name','contact','email','phone'];\n    protected $useTimestamps = true;\n}\n
