@@ -1,0 +1,39 @@
+-- inventory_schema.sql
+CREATE DATABASE IF NOT EXISTS inventory_db;
+USE inventory_db;
+
+CREATE TABLE categories (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE products (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  sku VARCHAR(64) UNIQUE,
+  name VARCHAR(255) NOT NULL,
+  category_id INT DEFAULT NULL,
+  cost DECIMAL(10,2) DEFAULT 0,
+  price DECIMAL(10,2) DEFAULT 0,
+  stock_qty INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
+);
+
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(100) UNIQUE,
+  password VARCHAR(255),
+  role VARCHAR(50) DEFAULT 'user',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE stock_movements (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  product_id INT NOT NULL,
+  type ENUM('in','out','adjust') NOT NULL,
+  qty INT NOT NULL,
+  note VARCHAR(512),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);

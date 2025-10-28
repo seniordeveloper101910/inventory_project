@@ -1,0 +1,1 @@
+<template><div class="p-6 text-center text-gray-500">Page Not Found</div></template>

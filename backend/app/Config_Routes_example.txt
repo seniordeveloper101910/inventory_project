@@ -1,0 +1,6 @@
+// Add these routes to app/Config/Routes.php (inside $routes->group('api', ...))
+$routes->get('products', 'Api\ProductController::index');
+$routes->get('products/(:num)', 'Api\ProductController::show/$1');
+$routes->post('products', 'Api\ProductController::create');
+$routes->put('products/(:num)', 'Api\ProductController::update/$1');
+$routes->delete('products/(:num)', 'Api\ProductController::delete/$1');
